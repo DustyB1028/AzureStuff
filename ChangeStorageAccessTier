@@ -1,0 +1,30 @@
+#update your subid
+$Subid = "<subid>"
+
+Select-AzSubscription -Subscriptionid $Subid
+
+#Add your storage account name
+$storageaccountname = "<storagename>"
+#Add the resource group name
+$storageresourcegroup = "<resourcegroup>"
+$storagetier = "Archive"     # Hot, Cool or Archive
+
+
+$storageaccount = Get-AzStorageAccount -name $storageaccountname -ResourceGroupName $storageresourcegroup
+
+$key = (get-azstorageaccountkey -ResourceGroupName $storageaccount.ResourceGroupName -Name $storageaccount.StorageAccountName).value[0]
+
+$context = New-AzstorageContext -StorageAccountName $storageaccount.StorageAccountName -StorageAccountKey $key
+
+
+$storagecontainers = get-azstoragecontainer -Context $context
+
+$Blobs = @()
+foreach ($StorageContainer in $StorageContainers) {
+    $Blobs += Get-AzStorageBlob -Context $Context -Container $StorageContainer.Name
+}
+
+Foreach ($Blob in $Blobs) {
+    $blob.icloudblob.SetStandardBlobTier($StorageTier)
+    write-host  "Changed -", $blob.name
+}
